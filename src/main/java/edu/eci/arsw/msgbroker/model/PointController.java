@@ -12,44 +12,35 @@ import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  *
  * @author 2087052
  */
-@Controller
-public class STOMPMessagesHandler {
-
+@RestController
+@RequestMapping(value = "/puntos")
+public class PointController {
     @Autowired
     SimpMessagingTemplate msgt;
     @Autowired
     PointDriver pd;
-
-    @MessageMapping("/newpoint")
-    public void getLine(Point pt) throws Exception {
-        System.out.println("Nuevo punto recibido en el servidor!:" + pt);
-        pd.addPoint(pt);
-        synchronized (pd.points) {
-            if (pd.getPoints().size() >= 4) {
-                List<Point> puntos = new LinkedList<>();
-                puntos.add(pd.getPoints().remove());
-                puntos.add(pd.getPoints().remove());
-                puntos.add(pd.getPoints().remove());
-                puntos.add(pd.getPoints().remove());
-                msgt.convertAndSend("/topic/newpolygon", puntos);
-
-            } else {
-                msgt.convertAndSend("/topic/newpoint", pt);
-            }
+    
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<?> manejadorPostRecursos(@RequestBody Point pt) {
+        try {
+            System.out.println("Nuevo punto recibido en el REST!:" + pt);
+            pd.addPoint(pt);
+            msgt.convertAndSend("/topic/newpoint", pt);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (Exception ex) {
+            Logger.getLogger(STOMPMessagesHandler.class.getName()).log(Level.SEVERE, null, ex);
+            return new ResponseEntity<>("Error", HttpStatus.FORBIDDEN);
         }
     }
 
 }
-    
-

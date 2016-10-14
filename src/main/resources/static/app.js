@@ -36,6 +36,14 @@ function connect() {
     });
 }
 
+function conectar() {
+    connect();
+    console.info('connecting to websockets');
+}
+function desconectar(){
+    disconnect();
+}
+
 function disconnect() {
     if (stompClient != null) {
         stompClient.disconnect();
@@ -52,8 +60,7 @@ function sendPoint(){
 
 $(document).ready(
         function () {
-            connect();
-            console.info('connecting to websockets');
+            
 
             function getMousePos(canvas, evt) {
                 var rect = canvas.getBoundingClientRect();
